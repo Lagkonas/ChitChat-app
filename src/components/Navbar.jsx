@@ -1,22 +1,22 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { getAuth, signOut } from 'firebase/auth';
 import { logOut } from '../features/user/userSlice';
+import { toast } from 'react-toastify';
 
 function Navbar() {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const auth = getAuth();
+  const user = auth.currentUser;
 
   const onClick = async () => {
     try {
       await signOut(auth);
       dispatch(logOut());
-      } catch (error) {
-      console.log(error)
+    } catch (error) {
+      toast.error(error.message);
     }
-    // window.location.reload()
-    // navigate('/');
+    window.location.reload();
   };
 
   return (
@@ -29,19 +29,24 @@ function Navbar() {
         </div>
         <div className='flex-none'>
           <ul className='menu menu-horizontal p-0'>
-            <li>
-              <Link to='/sign-up'>Sign Up</Link>
-            </li>
-            <li tabIndex='0'>
-              <Link to='/sign-in' >
-                Login
-              </Link>
-            </li>
-            <li>
-              <Link to='/sign-in'>
-                <button onClick={onClick}>Logout</button>
-              </Link>
-            </li>
+            {!user ? (
+              <>
+                <li>
+                  <Link to='/sign-up'>Sign Up</Link>
+                </li>
+                <li tabIndex='0'>
+                  <Link to='/sign-in'>Sign In</Link>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link to='/sign-in'>
+                    <button onClick={onClick}>Logout</button>
+                  </Link>
+                </li>
+              </>
+            )}
           </ul>
           <label className='swap swap-rotate'>
             <input type='checkbox' />

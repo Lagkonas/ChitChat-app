@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { signIn } from '../features/user/userSlice';
+import { toast } from 'react-toastify';
 import Footer from '../components/Footer';
 
 function SignIn() {
@@ -15,7 +16,6 @@ function SignIn() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -29,23 +29,23 @@ function SignIn() {
 
     try {
       const auth = getAuth();
-      
+
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password
-        );
-        
-        if (userCredential.user) {
+      );
+
+      if (userCredential.user) {
         const user = auth.currentUser;
         const { email, displayName } = user;
         dispatch(signIn({ email, displayName }));
         navigate('/chat');
       } else {
-        alert('Something went wrong');
+        toast.error('Something went wrong');
       }
     } catch (error) {
-      console.log(error);
+      toast.error(error.message);
     }
   };
 
@@ -61,12 +61,13 @@ function SignIn() {
                   <span className='label-text'>Email</span>
                 </label>
                 <input
-                  type='text'
+                  type='email'
                   id='email'
                   value={email}
                   placeholder='email'
                   className='input input-bordered mb-3 input-primary'
                   onChange={onChange}
+                  required
                 />
               </div>
               <div className='form-control'>
@@ -74,17 +75,21 @@ function SignIn() {
                   <span className='label-text'>Password</span>
                 </label>
                 <input
-                  type='text'
+                  type='password'
                   id='password'
                   value={password}
                   placeholder='password'
                   className='input input-bordered input-primary'
                   onChange={onChange}
+                  required
                 />
                 <label className='label justify-end'>
-                  <a href='#' className='label-text-alt link-hover'>
+                  <Link
+                    to='/forgot-password'
+                    className='label-text-alt link-hover'
+                  >
                     Forgot password?
-                  </a>
+                  </Link>
                 </label>
               </div>
               <div className='form-control mt-7'>
