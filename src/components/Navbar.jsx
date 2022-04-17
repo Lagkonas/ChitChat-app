@@ -1,22 +1,27 @@
+import {useState} from 'react'
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getAuth, signOut } from 'firebase/auth';
 import { logOut } from '../features/user/userSlice';
 import { toast } from 'react-toastify';
+import Spinner from './Spinner';
 
 function Navbar() {
+  const [loading, setLoading] = useState(false)
   const dispatch = useDispatch();
   const auth = getAuth();
-  const user = auth.currentUser;
+
+  const {user} = useSelector(state=> state.user)
 
   const onClick = async () => {
+    setLoading(true);
     try {
       await signOut(auth);
       dispatch(logOut());
     } catch (error) {
       toast.error(error.message);
     }
-    window.location.reload();
+    setLoading(false)
   };
 
   return (
@@ -39,13 +44,11 @@ function Navbar() {
                 </li>
               </>
             ) : (
-              <>
-                <li>
-                  <Link to='/sign-in'>
-                    <button onClick={onClick}>Logout</button>
-                  </Link>
-                </li>
-              </>
+              <li>
+                <Link to='/sign-in'>
+                  <button onClick={onClick}>Logout</button>
+                </Link>
+              </li>
             )}
           </ul>
           <label className='swap swap-rotate'>
@@ -67,6 +70,7 @@ function Navbar() {
           </label>
         </div>
       </div>
+      {loading && <Spinner/>}
     </>
   );
 }

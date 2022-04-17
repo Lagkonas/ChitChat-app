@@ -11,8 +11,10 @@ import { db } from '../firebase.config';
 import { signUp } from '../features/user/userSlice';
 import { toast } from 'react-toastify';
 import Footer from '../components/Footer';
+import Spinner from '../components/Spinner';
 
 function SignUp() {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -34,7 +36,7 @@ function SignUp() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -54,13 +56,17 @@ function SignUp() {
         const { email, displayName } = user;
         dispatch(signUp({ email, displayName }));
         navigate('/chat');
-      } else {
-        toast.error('Something went wrong');
-      }
+      } 
     } catch (error) {
       toast.error(error.message);
+      setFormData({});
     }
+    setLoading(false)
   };
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   return (
     <>

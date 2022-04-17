@@ -5,8 +5,10 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { signIn } from '../features/user/userSlice';
 import { toast } from 'react-toastify';
 import Footer from '../components/Footer';
+import Spinner from '../components/Spinner';
 
 function SignIn() {
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -26,7 +28,7 @@ function SignIn() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true);
     try {
       const auth = getAuth();
 
@@ -41,13 +43,17 @@ function SignIn() {
         const { email, displayName } = user;
         dispatch(signIn({ email, displayName }));
         navigate('/chat');
-      } else {
-        toast.error('Something went wrong');
       }
     } catch (error) {
       toast.error(error.message);
+      setFormData({});
     }
+    setLoading(false);
   };
+
+  if (loading) {
+    return <Spinner/>
+  }
 
   return (
     <>
