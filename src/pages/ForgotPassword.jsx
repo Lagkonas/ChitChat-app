@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
-import {toast} from 'react-toastify';
+import { toast } from 'react-toastify';
 import Footer from '../components/Footer';
+import Spinner from '../components/Spinner';
 
 function ForgotPassword() {
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const navigate = useNavigate();
   const auth = getAuth();
@@ -15,6 +17,7 @@ function ForgotPassword() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       await sendPasswordResetEmail(auth, email);
@@ -22,7 +25,12 @@ function ForgotPassword() {
     } catch (error) {
       toast.error(error.message);
     }
+    setLoading(false);
   };
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   return (
     <>
