@@ -17,7 +17,7 @@ function Navbar() {
     setLoading(true);
     try {
       await signOut(auth);
-      dispatch(logOut());
+      dispatch(logOut(user));
     } catch (error) {
       toast.error(error.message);
     }

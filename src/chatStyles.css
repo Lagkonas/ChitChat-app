@@ -129,11 +129,9 @@
   #frame #sidepanel #profile .wrap img.offline {
     border: 2px solid #95a5a6;
   }
-  #frame #sidepanel #profile .wrap p {
+  /* #frame #sidepanel #profile .wrap p {
+  } */
 
-
-    
-  }
   @media screen and (max-width: 735px) {
     #frame #sidepanel #profile .wrap p {
       display: none;
@@ -703,7 +701,7 @@
     padding: 0;
   }
   
-  #text {
+  #message {
     height: 30px;
     background-color: hsl(var(--b3));
     color: white;

@@ -1,16 +1,14 @@
-function UserItem() {
+function UserItem(user) {
+  const userName = user.user.data.name
+
   return (
-    <div id='contacts'>
-      <ul id='users'>
         <li className='contact'>
           <div className='wrap'>
             <div className='meta'>
-              <p className='name'>Louis Litt</p>
+              <p className='name'>{userName}</p>
             </div>
           </div>
         </li>
-      </ul>
-    </div>
   );
 }
 
