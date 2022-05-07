@@ -34,7 +34,10 @@ function ForgotPassword() {
 
   return (
     <>
-      <div className='hero-content mb-9 mt-9 mb-4 text-center'>
+      <div
+        id='sign-in-form'
+        className='hero-content flex items-center mx-auto h-auto justify-center text-center'
+      >
         <div className='card flex-shrink-0 w-full max-w-md shadow-lg bg-base-300'>
           <div className='card-body  pt-4'>
             <h1 className='text-xl font-bold'>Reset Password</h1>
@@ -51,6 +54,7 @@ function ForgotPassword() {
                   className='input input-bordered mb-3 input-primary'
                   onChange={onChange}
                   required
+                  autoComplete='off'
                 />
               </div>
               <div className='form-control mt-7'>

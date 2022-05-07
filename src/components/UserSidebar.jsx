@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase.config';
-import { getDocs, collection } from 'firebase/firestore';
+import { getDocs, collection, query, where } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
-import UserSearchInput from './UserSearchInput';
+import { toast } from 'react-toastify';
 import UserItem from './UserItem';
-import Spinner from './Spinner';
+import Spinner from './UsersSpinner';
 
 function UserSidebar() {
+  const [searchedUser, setSearchedUser] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -14,8 +15,8 @@ function UserSidebar() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      setLoading(true);
       try {
+        setLoading(true)
         const usersRef = collection(db, 'users');
         const docSnap = await getDocs(usersRef);
 
@@ -29,34 +30,87 @@ function UserSidebar() {
         });
         setUsers(users);
       } catch (error) {
-        console.log(error);
+        toast.error(error);
       }
+      setLoading(false);
     };
     fetchUsers();
-    setLoading(false);
   }, []);
 
-  if (loading) return <Spinner />;
+  const onChange = async (e) => {
+    const user = await findUser(e.target.value);
+    setSearchedUser(user);
+  };
 
-  if (users.length > 0) {
-    return (
-      <div id='sidepanel'>
-        <div id='profile'>
-          <div className='wrap'>
-            <p id='user'>{user.displayName}</p>
-          </div>
+  const debounce = (fn, delay) => {
+    let timer;
+    return (...args) => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        fn(...args);
+      }, delay);
+    };
+  };
+
+  const findUser = async (inputName) => {
+    try {
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('name', '==', inputName));
+
+      const userSnapshot = await getDocs(q);
+
+      const user = [];
+
+      userSnapshot.forEach((doc) => {
+        return user.push(doc.data());
+      });
+
+      return user;
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  return (
+    <div id='sidepanel'>
+      <div id='profile'>
+        <div className='wrap'>
+          <p id='user'>{user.displayName}</p>
         </div>
-        <UserSearchInput />
-        <div id='contacts'>
+      </div>
+      <div id='search'>
+        <input
+          type='text'
+          onChange={debounce((e) => onChange(e), 500)}
+          placeholder='Search contacts...'
+        />
+      </div>
+      <div id='contacts'>
+        {loading ? (
+          <Spinner/>
+        )
+      : (
+        searchedUser.length === 0 ? (
           <ul id='users'>
             {users.map((user, index) => (
               <UserItem user={user} key={index} />
             ))}
           </ul>
-        </div>
+        ) : (
+          <ul id='users'>
+            <li className='contact'>
+              <div className='wrap'>
+                <div className='meta'>
+                  <p className='name'>{searchedUser[0].name}</p>
+                </div>
+              </div>
+            </li>
+          </ul>
+        )
+      )}
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default UserSidebar;

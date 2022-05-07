@@ -1,5 +1,5 @@
 function UserItem(user) {
-  const userName = user.user.data.name
+  const userName = user.user.data.name;
 
   return (
         <li className='contact'>

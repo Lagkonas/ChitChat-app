@@ -1,8 +1,8 @@
-function SentMessageItem() {
+function SentMessageItem({displayName, message}) {
   return (
     <li className='replies'>
-      <h1>Mike Ross</h1>
-      <p>When you're backed against the wall, break the god damn thing down.</p>
+      {/* <h1>{displayName}</h1> */}
+      <p>{message}</p>
     </li>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import {
@@ -9,6 +9,9 @@ import {
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { signUp } from '../features/user/userSlice';
+import {useCurrentMessages} from '../hooks/useCurrentMessages'
+import { realtimeDB } from '../firebase.config';
+import {ref, remove} from 'firebase/database';
 import { toast } from 'react-toastify';
 import Footer from '../components/Footer';
 import Spinner from '../components/Spinner';
@@ -22,10 +25,21 @@ function SignUp() {
   });
 
   const { name, email, password } = formData;
+  const {messages} = useCurrentMessages();
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const auth = getAuth();
+
+  useEffect(()=>{
+    const now = Date.now();
+    const twoHours = 7200000;
+      messages.forEach(message=>{
+        if(now - message.timestamp > twoHours) {
+        remove(ref(realtimeDB, message.uid))
+        }
+      })
+},[messages])
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -70,8 +84,7 @@ function SignUp() {
 
   return (
     <>
-      <div className='space-between'>
-        <div className='hero-content  text-center'>
+        <div id='sign-in-form' className='hero-content flex items-center mx-auto h-auto justify-center text-center'>
           <div className='card  flex-shrink-0 w-full max-w-md shadow-lg bg-base-300'>
             <div className='card-body  pt-4'>
               <h1 className='text-xl font-bold'>Sign Up</h1>
@@ -88,6 +101,7 @@ function SignUp() {
                     className='input input-bordered mb-3 input-primary'
                     onChange={onChange}
                     required
+                    autoComplete='off'
                   />
                   <label className='label'>
                     <span className='label-text'>Email</span>
@@ -100,6 +114,7 @@ function SignUp() {
                     className='input input-bordered mb-3 input-primary'
                     onChange={onChange}
                     required
+                    autoComplete='off'
                   />
                   <label className='label'>
                     <span className='label-text'>Password</span>
@@ -112,6 +127,7 @@ function SignUp() {
                     className='input input-bordered input-primary'
                     onChange={onChange}
                     required
+                    autoComplete='off'
                   />
                 </div>
                 <div className='form-control mt-10'>
@@ -122,7 +138,6 @@ function SignUp() {
           </div>
         </div>
         <Footer />
-      </div>
     </>
   );
 }
