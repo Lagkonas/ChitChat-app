@@ -18,9 +18,9 @@ function ForgotPassword() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       await sendPasswordResetEmail(auth, email);
+      toast.success('Reset email has been sent!')
       navigate('/sign-in');
     } catch (error) {
       toast.error(error.message);

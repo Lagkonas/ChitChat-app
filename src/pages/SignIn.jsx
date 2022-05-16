@@ -1,11 +1,11 @@
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { signIn } from '../features/user/userSlice';
-import {useCurrentMessages} from '../hooks/useCurrentMessages'
+import { useCurrentMessages } from '../hooks/useCurrentMessages';
 import { realtimeDB } from '../firebase.config';
-import {ref, remove} from 'firebase/database';
+import { ref, remove } from 'firebase/database';
 import { toast } from 'react-toastify';
 import Footer from '../components/Footer';
 import Spinner from '../components/Spinner';
@@ -18,20 +18,20 @@ function SignIn() {
   });
 
   const { email, password } = formData;
-  const {messages} = useCurrentMessages();
+  const { messages } = useCurrentMessages();
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  useEffect(()=>{
-      const now = Date.now();
-      const twoHours = 7200000;
-        messages.forEach(message=>{
-          if(now - message.timestamp > twoHours) {
-          remove(ref(realtimeDB, message.uid))
-          }
-        })
-  },[messages])
+  useEffect(() => {
+    const now = Date.now();
+    const twoHours = 7200000;
+    messages.forEach((message) => {
+      if (now - message.timestamp > twoHours) {
+        remove(ref(realtimeDB, message.uid));
+      }
+    });
+  }, [messages]);
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -60,7 +60,10 @@ function SignIn() {
       }
     } catch (error) {
       toast.error(error.message);
-      setFormData({});
+      setFormData({
+        email: '',
+        password: '',
+      });
     }
     setLoading(false);
   };

@@ -25,7 +25,7 @@ function App() {
           <Route path='/forgot-password' element={<ForgotPassword />} />
         </Routes>
       </Router>
-      <ToastContainer />
+      <ToastContainer theme='dark' pauseOnHover={true} />
     </>
   );
 }
