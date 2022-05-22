@@ -1,6 +1,6 @@
-function UserItem(user) {
-  const userName = user.user.data.name;
-
+function UserItem({user}) {
+  const userName = user.data.name;
+  
   return (
         <li className='contact'>
           <div className='wrap'>

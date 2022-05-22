@@ -1,45 +1,49 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  updateProfile,
-} from 'firebase/auth';
-import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase.config';
-import { signUp } from '../features/user/userSlice';
-import { useCurrentMessages } from '../hooks/useCurrentMessages';
-import { realtimeDB } from '../firebase.config';
-import { ref, remove } from 'firebase/database';
+import { useDispatch, useSelector } from 'react-redux';
+import { reset, signUp } from '../features/user/userSlice';
+import { useClearMessages } from '../hooks/useClearMessages';
 import { toast } from 'react-toastify';
 import Footer from '../components/Footer';
 import Spinner from '../components/Spinner';
 
 function SignUp() {
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
   });
 
+  const { authUser, isError, isSuccess, isLoading, message } = useSelector(
+    (state) => state.user
+  );
+
   const { name, email, password } = formData;
-  const { messages } = useCurrentMessages();
+
+  useClearMessages();
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const auth = getAuth();
 
   useEffect(() => {
-    const now = Date.now();
-    const twoHours = 7200000;
-    messages.forEach((message) => {
-      if (now - message.timestamp > twoHours) {
-        remove(ref(realtimeDB, message.uid));
+    if (isError) {
+      toast.error(message);
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+      });
+    }
+    if (isSuccess || authUser) {
+      navigate('/chat');
+    }
+
+    return () => {
+      if (isSuccess) {
+        dispatch(reset());
       }
-    });
-  }, [messages]);
+    };
+  }, [authUser,dispatch,isSuccess,isError,message,navigate]);
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -48,41 +52,19 @@ function SignUp() {
     }));
   };
 
-  const onSubmit = async (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
 
-      const user = userCredential.user;
+    const userData = {
+      name,
+      email,
+      password,
+    };
 
-      const formDataCopy = { ...formData };
-      delete formDataCopy.password;
-      formDataCopy.timestamp = serverTimestamp();
-      await setDoc(doc(db, 'users', user.uid), formDataCopy);
-      await updateProfile(auth.currentUser, { displayName: name });
-
-      if (user) {
-        const { email, displayName } = user;
-        dispatch(signUp({ email, displayName }));
-        navigate('/chat');
-      }
-    } catch (error) {
-      toast.error(error.message);
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-      });
-    }
-    setLoading(false);
+    dispatch(signUp(userData));
   };
 
-  if (loading) {
+  if (isLoading) {
     return <Spinner />;
   }
 

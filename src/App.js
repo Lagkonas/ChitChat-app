@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './chatStyles.css';
 import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
+import NavigationRoute from './components/NavigationRoute';
 import Home from './pages/Home';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
@@ -16,7 +17,9 @@ function App() {
       <Router>
         <Navbar />
         <Routes>
-          <Route path='/' element={<Home />} />
+          <Route path='/' element={<NavigationRoute/>}>
+            <Route path='/' element={<Home />} />
+          </Route>
           <Route path='/sign-up' element={<SignUp />} />
           <Route path='/sign-in' element={<SignIn />} />
           <Route path='/chat' element={<PrivateRoute />}>

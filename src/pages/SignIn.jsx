@@ -1,37 +1,47 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { signIn } from '../features/user/userSlice';
-import { useCurrentMessages } from '../hooks/useCurrentMessages';
-import { realtimeDB } from '../firebase.config';
-import { ref, remove } from 'firebase/database';
+import { useDispatch, useSelector } from 'react-redux';
+import { login, reset } from '../features/user/userSlice';
+import { useClearMessages } from '../hooks/useClearMessages';
 import { toast } from 'react-toastify';
 import Footer from '../components/Footer';
 import Spinner from '../components/Spinner';
 
 function SignIn() {
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
   const { email, password } = formData;
-  const { messages } = useCurrentMessages();
+  useClearMessages();
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const { isError, isSuccess, message, isLoading, authUser } = useSelector(
+    (state) => state.user
+  );
+
   useEffect(() => {
-    const now = Date.now();
-    const twoHours = 7200000;
-    messages.forEach((message) => {
-      if (now - message.timestamp > twoHours) {
-        remove(ref(realtimeDB, message.uid));
+    if (isError) {
+      toast.error(message);
+      setFormData({
+        email: '',
+        password: '',
+      });
+    }
+
+    if (isSuccess || authUser) {
+      navigate('/chat');
+    }
+
+    return () => {
+      if (isSuccess) {
+        dispatch(reset());
       }
-    });
-  }, [messages]);
+    };
+  }, [authUser, isSuccess, isError, message, navigate, dispatch]);
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -40,35 +50,18 @@ function SignIn() {
     }));
   };
 
-  const onSubmit = async (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      const auth = getAuth();
 
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    const userData = {
+      email,
+      password,
+    };
 
-      if (userCredential.user) {
-        const user = auth.currentUser;
-        const { email, displayName } = user;
-        dispatch(signIn({ email, displayName }));
-        navigate('/chat');
-      }
-    } catch (error) {
-      toast.error(error.message);
-      setFormData({
-        email: '',
-        password: '',
-      });
-    }
-    setLoading(false);
+    dispatch(login(userData));
   };
 
-  if (loading) {
+  if (isLoading) {
     return <Spinner />;
   }
 

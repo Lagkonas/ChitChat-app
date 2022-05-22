@@ -1,73 +1,45 @@
 import { useState, useEffect } from 'react';
-import { db } from '../firebase.config';
-import { getDocs, collection, query, where } from 'firebase/firestore';
-import { useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchUsers, reset } from '../features/user/userSlice';
 import UserItem from './UserItem';
+import SearchedUsersItem from './SearchedUsersItem';
 import Spinner from './UsersSpinner';
 
 function UserSidebar() {
   const [searchedUser, setSearchedUser] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
 
-  const { user } = useSelector((state) => state.user);
+  const { authUser, users, isLoading,} = useSelector(
+    (state) => state.user
+  );
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true)
-        const usersRef = collection(db, 'users');
-        const docSnap = await getDocs(usersRef);
+      dispatch(fetchUsers());
 
-        const users = [];
 
-        docSnap.forEach((doc) => {
-          return users.push({
-            id: doc.id,
-            data: doc.data(),
-          });
-        });
-        setUsers(users);
-      } catch (error) {
-        toast.error(error);
+    return () => {
+      if (users) {
+        dispatch(reset());
       }
-      setLoading(false);
     };
-    fetchUsers();
-  }, []);
+    // eslint-disable-next-line
+  }, [dispatch]);
 
-  const onChange = async (e) => {
-    const user = await findUser(e.target.value);
-    setSearchedUser(user);
-  };
+  const onChange = (e) => {
+    setSearchInput(e.target.value);
 
-  const debounce = (fn, delay) => {
-    let timer;
-    return (...args) => {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
-        fn(...args);
-      }, delay);
-    };
-  };
-
-  const findUser = async (inputName) => {
-    try {
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('name', '==', inputName));
-
-      const userSnapshot = await getDocs(q);
-
-      const user = [];
-
-      userSnapshot.forEach((doc) => {
-        return user.push(doc.data());
+    if (!isLoading) {
+      const usersNameArray = users.map((element) => {
+        return element.data.name;
       });
-
-      return user;
-    } catch (error) {
-      toast.error(error);
+      const filterUsers = (array, query) => {
+        return array.filter((element) => {
+          return element.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+        });
+      };
+      setSearchedUser(filterUsers(usersNameArray, searchInput));
     }
   };
 
@@ -75,22 +47,21 @@ function UserSidebar() {
     <div id='sidepanel'>
       <div id='profile'>
         <div className='wrap'>
-          <p id='user'>{user.displayName}</p>
+          <p id='user'>{authUser.userName}</p>
         </div>
       </div>
       <div id='search'>
         <input
           type='text'
-          onChange={debounce((e) => onChange(e), 500)}
+          value={searchInput}
+          onChange={onChange}
           placeholder='Search contacts...'
         />
       </div>
       <div id='contacts'>
-        {loading ? (
-          <Spinner/>
-        )
-      : (
-        searchedUser.length === 0 ? (
+        {isLoading ? (
+          <Spinner />
+        ) : searchInput.length === 0 ? (
           <ul id='users'>
             {users.map((user, index) => (
               <UserItem user={user} key={index} />
@@ -98,16 +69,11 @@ function UserSidebar() {
           </ul>
         ) : (
           <ul id='users'>
-            <li className='contact'>
-              <div className='wrap'>
-                <div className='meta'>
-                  <p className='name'>{searchedUser[0].name}</p>
-                </div>
-              </div>
-            </li>
+            {searchedUser.map((users, index) => (
+              <SearchedUsersItem users={users} key={index} />
+            ))}
           </ul>
-        )
-      )}
+        )}
       </div>
     </div>
   );

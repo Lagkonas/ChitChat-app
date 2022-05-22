@@ -1,29 +1,14 @@
-import { useSelector } from 'react-redux';
+import { useSelector} from 'react-redux';
 import {useCurrentMessages} from '../hooks/useCurrentMessages'
 import ReceivedMessageItem from './ReceivedMessageItem';
 import SentMessageItem from './SentMessageItem';
 import TextInput from './TextInput';
 
 function MessagesContent() {
-  const { user } = useSelector((state) => state.user);
-  const userName = user.displayName;
-  
-  const {messages} = useCurrentMessages();
-  
-  // const [messages, setMessages] = useState([]);
-  // useEffect(() => {
-  //   onValue(ref(realtimeDB), (snapshot) => {
-  //     setMessages([]);
-  //     const data = snapshot.val()
-  //     if (data !== null) {
-  //       Object.values(data)
-  //       .sort((a,b)=> a.timestamp - b.timestamp)
-  //       .map((message) => setMessages((prevState) => [...prevState, message])
-  //       );
-  //     }
-  //     // setMessages(prevState=>[...prevState, data])
-  //   });
-  // }, []);
+  const { authUser } = useSelector((state) => state.user);
+  const userName = authUser.userName;
+
+  const {messages} = useCurrentMessages()
 
   return (
     <div className='content'>
@@ -33,16 +18,18 @@ function MessagesContent() {
       <div className='messages'>
         <ul id='messages'>
           {messages.map((message, index) => {
-            return userName === message.displayName ? (
+            return userName === message.userName ? (
               <SentMessageItem
-                displayName={message.displayName}
+                displayName={message.userName}
                 message={message.message}
+                timestamp={message.timestamp}
                 key={index}
               />
             ) : (
               <ReceivedMessageItem
-                displayName={message.displayName}
+                displayName={message.userName}
                 message={message.message}
+                timestamp={message.timestamp}
                 key={index}
               />
             );

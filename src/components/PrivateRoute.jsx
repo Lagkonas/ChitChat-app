@@ -1,11 +1,10 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { getAuth } from 'firebase/auth';
+import { useSelector } from 'react-redux';
 
 const PrivateRoute = () => {
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const { authUser } = useSelector(state => state.user);
 
-  return user ? <Outlet /> : <Navigate to='/sign-in' />;
+  return authUser ? <Outlet /> : <Navigate to='/sign-in' />;
 };
 
 export default PrivateRoute;

@@ -8,14 +8,14 @@ import {toast} from 'react-toastify';
 function TextInput() {
   const [message, setMessage] = useState('');
 
-  const { user } = useSelector((state) => state.user);
+  const { authUser } = useSelector((state) => state.user);
 
-  const { email, displayName } = user;
+  const { userEmail, userName } = authUser;
 
   const onChange = (e) => {
     setMessage(e.target.value);
   };
-  const emailCopy = email.split('@')[0];
+  const emailCopy = userEmail.split('@')[0];
 
   const onClick = () => {
     if (message === '') {
@@ -24,7 +24,7 @@ function TextInput() {
     const messageId = uuidv4();
     set(ref(realtimeDB, messageId), {
       emailCopy,
-      displayName,
+      userName,
       message: message.trim(),
       timestamp: serverTimestamp(),
       uid: messageId
